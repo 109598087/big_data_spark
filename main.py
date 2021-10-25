@@ -1,6 +1,6 @@
 from pyspark.sql import SparkSession
 
-spark1 = SparkSession.builder.appName("hw1").getOrCreate()
+spark = SparkSession.builder.appName("hw1").getOrCreate()
 filePath = 'household_power_consumption.csv'
 # df = spark.read.format("csv").option("header", "true").option("sep", ";").load(filePath)
 df = spark.read.csv(filePath, inferSchema=True, header=True, sep=';')
