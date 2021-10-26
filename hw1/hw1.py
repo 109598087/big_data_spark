@@ -15,9 +15,9 @@ df_pd = df_pd.drop(df_pd[df_pd['Global_active_power']  == '?'].index)
 
 print(type(df_pd))
 print(df_pd.head())
-df_pd.to_csv('household_power_consumption.csv')
 
-df_pd=pd.read_csv(filePath, sep=',')
+# df_pd.to_csv('household_power_consumption.csv')
+# df_pd=pd.read_csv(filePath, sep=',')
 
 df = sqlContext.createDataFrame(df_pd)
 print(type(df))
