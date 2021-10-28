@@ -16,15 +16,13 @@ df_pd = df_pd[column_list]
 # remove有?的 row
 df_pd = df_pd.drop(df_pd[df_pd['Global_active_power'] == '?'].index)
 
-
-
 # pandas DataFrame to pyspark DataFrame
 schema = StructType([
     StructField("Global_active_power", StringType(), False),
     StructField("Global_reactive_power", StringType(), False),
     StructField("Voltage", StringType(), False),
     StructField("Global_intensity", StringType(), False)
-    ])
+])
 df = sqlContext.createDataFrame(df_pd, schema)
 print(type(df))
 
@@ -32,8 +30,7 @@ print(type(df))
 for column in column_list:
     df = df.withColumn(column, df[column].cast('double'))
 
-
-# (1) Output the minimum, maximum, and count of the following columns: ‘global active power’, ‘global reactive power’, ‘voltage’, and ‘global intensity’. 
+# (1) Output the minimum, maximum, and count of the following columns: ‘global active power’, ‘global reactive power’, ‘voltage’, and ‘global intensity’.
 statistics_list = ['max', 'min', 'count']
 max_min_count_list = [[df.agg({column: stat}).first()[0] for stat in statistics_list] for column in column_list]
 
@@ -69,4 +66,4 @@ result_spark_df = result_spark_df.withColumn('scaled', result_spark_df['scaled']
 print(result_spark_df.show())
 result_spark_df_pd = result_spark_df.toPandas()
 result_spark_df_pd.to_csv('min_max_scaled.csv')
-#result_spark_df.write.format("csv").save("/tmp/spark_output/datacsv")
+# result_spark_df.write.format("csv").save("/tmp/spark_output/datacsv")
