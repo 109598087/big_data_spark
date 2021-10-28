@@ -49,7 +49,6 @@ minmax_scaler = MinMaxScaler(inputCol='ss_features', outputCol=str(column_list))
 train = minmax_scaler.fit(temp_train).transform(temp_train)
 # train.show(2)
 result_spark_df = train[[str(column_list)]]
-result_spark_df = result_spark_df.withColumn(str(column_list), result_spark_df['scaled'].cast('string'))
 # print(result_spark_df.show())
 result_spark_df_pd = result_spark_df.toPandas()
 result_spark_df_pd.to_csv('min_max_scaled.csv')
