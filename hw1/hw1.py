@@ -33,7 +33,6 @@ for column in column_list:
     df = df.withColumn(column, df[column].cast('double'))
 
 
-'''
 # (1) Output the minimum, maximum, and count of the following columns: ‘global active power’, ‘global reactive power’, ‘voltage’, and ‘global intensity’. 
 statistics_list = ['max', 'min', 'count']
 max_min_count_list = [[df.agg({column: stat}).first()[0] for stat in statistics_list] for column in column_list]
@@ -55,7 +54,7 @@ for i in range(len(column_list)):
 
 mean_std_df = pd.DataFrame(mean_std_dict, index=statistics_list)
 print(mean_std_df)
-'''
+
 # (3) Perform min-max normalization on the columns to generate normalized output.
 from pyspark.ml.feature import VectorAssembler, MinMaxScaler
 
@@ -66,4 +65,8 @@ minmax_scaler = MinMaxScaler(inputCol='ss_features', outputCol='scaled')
 train = minmax_scaler.fit(temp_train).transform(temp_train)
 # train.show(2)
 result_spark_df = train[['scaled']]
+result_spark_df = result_spark_df.withColumn('scaled', result_spark_df['scaled'].cast('string'))
 print(result_spark_df.show())
+result_spark_df_pd = result_spark_df.toPandas()
+result_spark_df_pd.to_csv('min_max_scaled.csv')
+#result_spark_df.write.format("csv").save("/tmp/spark_output/datacsv")
