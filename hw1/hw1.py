@@ -1,35 +1,45 @@
 from pyspark import SparkConf, SparkContext
 from pyspark.sql import SQLContext
+from pyspark.sql.types import *
 import pandas as pd
 
-
-conf = SparkConf().setAppName('test3').setMaster("spark://192.168.56.101:7077") 
+conf = SparkConf().setAppName('test3').setMaster("spark://192.168.56.101:7077")
 sc = SparkContext()
 sqlContext = SQLContext(sc)
 
 filePath = 'household_power_consumption.csv'
-df_pd=pd.read_csv(filePath, sep=';')
+df_pd = pd.read_csv(filePath, sep=';')
 
-df_pd = df_pd.drop(df_pd[df_pd['Global_active_power']  == '?'].index)
-# df = df.filter(df.Global_active_power != '?') # for pyspark
+column_list = ['Global_active_power', 'Global_reactive_power', 'Voltage', 'Global_intensity']
+df_pd = df_pd[column_list]
 
-print(type(df_pd))
-print(df_pd.head())
-
-# df_pd.to_csv('household_power_consumption.csv')
-# df_pd=pd.read_csv(filePath, sep=',')
-
-df = sqlContext.createDataFrame(df_pd)
-print(type(df))
-a = '?'
 # remove有?的 row
+df_pd = df_pd.drop(df_pd[df_pd['Global_active_power'] == '?'].index)
+# print(type(df_pd))
+# print(df_pd.head())
+
+# df_pd = df_pd.replace(pd.NA, '')
+
+
+schema = StructType([
+    StructField("Global_active_power", StringType(), False),
+    StructField("Global_reactive_power", StringType(), False),
+    StructField("Voltage", StringType(), False),
+    StructField("Global_intensity", StringType(), False)
+])
+
+df = sqlContext.createDataFrame(df_pd, schema)
+print(type(df))
+
+# df = df.filter(df.Global_active_power != '?') # for pyspark
 # df = df.where("Global_active_power != -")
 # change dtypes
-from pyspark.sql.types import DoubleType
+# from pyspark.sql.types import DoubleType
+
+# column_list = ['Global_active_power', 'Global_reactive_power', 'Voltage', 'Global_intensity']
+# column_list = ['Global_active_power']
 
 # print(df.dtypes)
-# column_list = ['Global_active_power', 'Global_reactive_power', 'Voltage', 'Global_intensity']
-column_list = ['Global_active_power']
 for column in column_list:
     df = df.withColumn(column, df[column].cast('double'))
 df = df[column_list]
@@ -39,6 +49,8 @@ df.show(2)
 #     df_remove_q.agg({column: 'max'}).show()
 #     df_remove_q.agg({column: 'min'}).show()
 #     df_remove_q.agg({column: 'count'}).show()
+abc = df.agg({column_list[0]: 'max'})
+print(abc)
 # # (2) Output the mean and standard deviation of these columns.
 # df_remove_q.agg({column: 'mean'}).show()
 # df_remove_q.agg({column: 'std'}).show()
