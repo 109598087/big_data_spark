@@ -15,8 +15,8 @@ for date_time in all_date_list:
 # print(time_list)
 df['PublishDate_date'] = date_list
 df['PublishDate_time'] = time_list
-# print(df.head())
-# print(df.groupby('PublishDate_date'))
+print(df.head())
+print(df.groupby('PublishDate_date'))
 
 str1 = '\'closer'
 
@@ -31,7 +31,7 @@ def remove_ch(word):
 
 
 all_title_list = df['Title'].values
-# print(all_title_list)
+print(all_title_list)
 word_count_dict = dict()
 for title in all_title_list:
     title_split = title.split(' ')
@@ -41,7 +41,6 @@ for title in all_title_list:
             word_count_dict[word] += 1
         else:
             word_count_dict[word] = 0
-# print(word_count_dict)
+print(word_count_dict)
 word_count_dict = {k: v for k, v in sorted(word_count_dict.items(), key=lambda item: item[1], )}
-
 print(word_count_dict)
