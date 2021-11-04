@@ -61,24 +61,30 @@ df = pd.read_csv('News_Final.csv')
 #     print(topic, sort_words_by_most_frequent_in_descending_order(df.loc[topic_groups[topic], :], 'Headline'))
 
 
-# (2) get date, hour two column
-all_date_list = df['PublishDate'].values
-date_list = list()
-hour_list = list()
-for date_time in all_date_list:
-    data_time_split = date_time.split(' ')
-    date_list.append(data_time_split[0])
-    hour = data_time_split[1].split(':')[0]
-    hour_list.append(hour)
-df['PublishDate_date'] = date_list
-df['PublishDate_hour'] = hour_list
-# by day
-groupby_date_df = df.groupby('PublishDate_date')
-print(groupby_date_df['Facebook'].mean())
-print(groupby_date_df['GooglePlus'].mean())
-print(groupby_date_df['LinkedIn'].mean())
-# by hour
-groupby_hour_df = df.groupby('PublishDate_hour')
-print(groupby_hour_df['Facebook'].mean())
-print(groupby_hour_df['GooglePlus'].mean())
-print(groupby_hour_df['LinkedIn'].mean())
+# # (2) get date, hour two column
+# all_date_list = df['PublishDate'].values
+# date_list = list()
+# hour_list = list()
+# for date_time in all_date_list:
+#     data_time_split = date_time.split(' ')
+#     date_list.append(data_time_split[0])
+#     hour = data_time_split[1].split(':')[0]
+#     hour_list.append(hour)
+# df['PublishDate_date'] = date_list
+# df['PublishDate_hour'] = hour_list
+# # by day
+# groupby_date_df = df.groupby('PublishDate_date')
+# print(groupby_date_df['Facebook'].mean())
+# print(groupby_date_df['GooglePlus'].mean())
+# print(groupby_date_df['LinkedIn'].mean())
+# # by hour
+# groupby_hour_df = df.groupby('PublishDate_hour')
+# print(groupby_hour_df['Facebook'].mean())
+# print(groupby_hour_df['GooglePlus'].mean())
+# print(groupby_hour_df['LinkedIn'].mean())
+#
+# # (3)
+# print(df.groupby('Topic')['SentimentTitle'].sum())
+# print(df.groupby('Topic')['SentimentHeadline'].mean())
+# print(df.groupby('Topic')['SentimentTitle'].sum())
+# print(df.groupby('Topic')['SentimentHeadline'].mean())
