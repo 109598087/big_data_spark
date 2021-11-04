@@ -34,28 +34,51 @@ def sort_words_by_most_frequent_in_descending_order(df, title_headline):
 # read csv
 df = pd.read_csv('News_Final.csv')
 
-# (1) total
-print(sort_words_by_most_frequent_in_descending_order(df, 'Title'))
-print(sort_words_by_most_frequent_in_descending_order(df, 'Headline'))
+# # (1) total
+# print(sort_words_by_most_frequent_in_descending_order(df, 'Title'))
+# print(sort_words_by_most_frequent_in_descending_order(df, 'Headline'))
+#
+# # (1) per day
+# # split date_time to two column
+# all_date_list = df['PublishDate'].values
+# date_list = list()
+# for date_time in all_date_list:
+#     data_time_split = date_time.split(' ')
+#     date_list.append(data_time_split[0])
+# df['PublishDate_date'] = date_list
+# day_groups = df.groupby('PublishDate_date').groups
+# for day, index_list in day_groups.items():
+#     print(day, sort_words_by_most_frequent_in_descending_order(df.loc[day_groups[day], :], 'Title'))
+#
+# for day, index_list in day_groups.items():
+#     print(day, sort_words_by_most_frequent_in_descending_order(df.loc[day_groups[day], :], 'Headline'))
+#
+# # (1) per topic
+# topic_groups = df.groupby('Topic').groups
+# for topic, index_list in topic_groups.items():
+#     print(topic, sort_words_by_most_frequent_in_descending_order(df.loc[topic_groups[topic], :], 'Title'))
+# for topic, index_list in topic_groups.items():
+#     print(topic, sort_words_by_most_frequent_in_descending_order(df.loc[topic_groups[topic], :], 'Headline'))
 
-# (1) per day
-# split date_time to two column
+
+# (2) get date, hour two column
 all_date_list = df['PublishDate'].values
 date_list = list()
+hour_list = list()
 for date_time in all_date_list:
     data_time_split = date_time.split(' ')
     date_list.append(data_time_split[0])
+    hour = data_time_split[1].split(':')[0]
+    hour_list.append(hour)
 df['PublishDate_date'] = date_list
-day_groups = df.groupby('PublishDate_date').groups
-for day, index_list in day_groups.items():
-    print(day, sort_words_by_most_frequent_in_descending_order(df.loc[day_groups[day], :], 'Title'))
-
-for day, index_list in day_groups.items():
-    print(day, sort_words_by_most_frequent_in_descending_order(df.loc[day_groups[day], :], 'Headline'))
-
-# (1) per topic
-topic_groups = df.groupby('Topic').groups
-for topic, index_list in topic_groups.items():
-    print(topic, sort_words_by_most_frequent_in_descending_order(df.loc[topic_groups[topic], :], 'Title'))
-for topic, index_list in topic_groups.items():
-    print(topic, sort_words_by_most_frequent_in_descending_order(df.loc[topic_groups[topic], :], 'Headline'))
+df['PublishDate_hour'] = hour_list
+# by day
+groupby_date_df = df.groupby('PublishDate_date')
+print(groupby_date_df['Facebook'].mean())
+print(groupby_date_df['GooglePlus'].mean())
+print(groupby_date_df['LinkedIn'].mean())
+# by hour
+groupby_hour_df = df.groupby('PublishDate_hour')
+print(groupby_hour_df['Facebook'].mean())
+print(groupby_hour_df['GooglePlus'].mean())
+print(groupby_hour_df['LinkedIn'].mean())
