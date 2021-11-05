@@ -1,4 +1,5 @@
 import pandas as pd
+import pyspark.pandas as ps
 
 
 def remove_ch(word):
@@ -27,7 +28,7 @@ def sort_words_by_most_frequent_in_descending_order(df, title_headline):
 
 
 # read csv
-df = pd.read_csv('News_Final.csv')
+df = ps.read_csv('News_Final.csv')
 df = df.dropna()
 # create title_split_lower column
 df['Title_split_lower'] = [[remove_ch(title_s).lower() for title_s in title.split(' ')] for title in df['Title']]
@@ -83,7 +84,7 @@ df['Headline_split_lower'] = [[remove_ch(title_s).lower() for title_s in title.s
 # print(groupby_hour_df['Facebook'].mean())
 # print(groupby_hour_df['GooglePlus'].mean())
 # print(groupby_hour_df['LinkedIn'].mean())
-#
+
 # # (3)
 # print(df.groupby('Topic')['SentimentTitle'].sum())
 # print(df.groupby('Topic')['SentimentHeadline'].mean())
