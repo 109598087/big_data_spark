@@ -99,54 +99,87 @@ df = pd.read_csv('News_Final.csv')
 #
 
 
+# (4) topic
+
 def get_title_word_list(title):
+    title = str(title)
     title_word_list = title.split(' ')
     for i in range(len(title_word_list)):
         title_word_list[i] = remove_ch(title_word_list[i])
     return title_word_list
 
 
-# (4) topic
+def get_all_topic_most_word_list(df, topic_list, title_headline):
+    all_topic_most_word_list = list()  # 放所有topic 的most_word_list
+    se_topic_most_word_dict = dict()  # 放各topic 的most_word_list(100*100)
+    for topic in topic_list:
+        topic_df = df[df['Topic'] == topic]
+        se_topic_most_word_dict[topic] = sort_words_by_most_frequent_in_descending_order(topic_df, title_headline)
+        all_topic_most_word_list += se_topic_most_word_dict[topic]
+    all_topic_most_word_list = list(set(all_topic_most_word_list))
+    return all_topic_most_word_list, se_topic_most_word_dict
+
+
+def create_new_co_occurrence_matrices(most_word_list):
+    temp_list = [0 for i in range(100)]
+    co_occurrence_dict = dict()
+    co_occurrence_dict['index'] = most_word_list
+    for word in most_word_list:
+        co_occurrence_dict[word] = temp_list
+    return pd.DataFrame(co_occurrence_dict).set_index('index')
+
+
 topic_list = list(set(df['Topic'].values))
 
-all_topic_most_word_list = list()  # 放所有topic 的most_word_list
-se_topic_most_word_dict = dict()  # 放各topic 的most_word_list(100*100)
-for topic in topic_list:
-    topic_df = df[df['Topic'] == topic]
-    se_topic_most_word_dict[topic] = sort_words_by_most_frequent_in_descending_order(topic_df, 'Title')
-    all_topic_most_word_list += se_topic_most_word_dict[topic]
-
-all_topic_most_word_list = list(set(all_topic_most_word_list))
-# print(len(all_topic_most_word_list))
-
+# Title
+all_topic_most_word_list, se_topic_most_word_dict = get_all_topic_most_word_list(df, topic_list, 'Title')
 # title_split_list
 title_split_list = [get_title_word_list(title) for title in df['Title'].to_numpy()]
-
-
 occurrence_dict = dict()
 for word in all_topic_most_word_list:
     occurrence_dict[word] = [1 if word in title_split else 0 for title_split in title_split_list]
 occurrence_df = pd.DataFrame(occurrence_dict)
 # print(occurrence_df)
 
-# new co_occurrence_df
-topic = 'palestine'
-temp_list = [0 for i in range(100)]
-co_occurrence_dict = dict()
-most_word_list = se_topic_most_word_dict[topic]
-co_occurrence_dict['index'] = most_word_list
-for word in most_word_list:
-    co_occurrence_dict[word] = temp_list
-co_occurrence_df = pd.DataFrame(co_occurrence_dict).set_index('index')
-# print(co_occurrence_df)
+for topic in topic_list:
+    # new co_occurrence_df
+    most_word_list = se_topic_most_word_dict[topic]
+    # print(most_word_list)
+    co_occurrence_df = create_new_co_occurrence_matrices(most_word_list)
+    # print(co_occurrence_df)
 
-# count co_occurrence
-# find all 組合
-all_product_list = list(product(most_word_list, most_word_list))
-for com in all_product_list:
-    occurrence_number = occurrence_df[(occurrence_df[com[0]] == 1) & (occurrence_df[com[1]] == 1)][com[0]].count()
-    co_occurrence_df[com[0]][com[1]] = occurrence_number
-print(co_occurrence_df)
+    # # count co_occurrence
+    # # find all 組合
+    all_product_list = list(product(most_word_list, most_word_list))
+    for com in all_product_list:
+        occurrence_number = occurrence_df[(occurrence_df[com[0]] == 1) & (occurrence_df[com[1]] == 1)][com[0]].count()
+        co_occurrence_df[com[0]][com[1]] = occurrence_number
+    print(co_occurrence_df)
+print('##########################################################################################')
+# Headline
+all_topic_most_word_list, se_topic_most_word_dict = get_all_topic_most_word_list(df, topic_list, 'Headline')
+# title_split_list
+title_split_list = [get_title_word_list(title) for title in df['Headline'].to_numpy()]
+occurrence_dict = dict()
+for word in all_topic_most_word_list:
+    occurrence_dict[word] = [1 if word in title_split else 0 for title_split in title_split_list]
+occurrence_df = pd.DataFrame(occurrence_dict)
+# print(occurrence_df)
+
+for topic in topic_list:
+    # new co_occurrence_df
+    most_word_list = se_topic_most_word_dict[topic]
+    # print(most_word_list)
+    co_occurrence_df = create_new_co_occurrence_matrices(most_word_list)
+    # print(co_occurrence_df)
+
+    # # count co_occurrence
+    # # find all 組合
+    all_product_list = list(product(most_word_list, most_word_list))
+    for com in all_product_list:
+        occurrence_number = occurrence_df[(occurrence_df[com[0]] == 1) & (occurrence_df[com[1]] == 1)][com[0]].count()
+        co_occurrence_df[com[0]][com[1]] = occurrence_number
+    print(co_occurrence_df)
 
 end_time = time.time()
 print('time', end_time - start_time, 's')
