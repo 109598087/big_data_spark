@@ -1,19 +1,28 @@
 import pandas as pd
-import pyspark.pandas as ps
+import time
+
+start_time = time.time()
 
 
 def remove_ch(word):
-    remove_ch_list = [',', '?', '\'', '$', ';', '.', '&', ':', '!', '#', '”', '“', '£', '/', '(', ')', '"""', '\xa0',
-                      '\x9d']
+    remove_ch_list = [',', '?', '\'', '$', ';', '.', '&', ':', '!', '#', '”', '“', '£', '/', '(', ')', '"""', '\xa0']
     for ch in remove_ch_list:
         word = word.lower().replace(ch, '')
     return word
 
 
+def get_df_title_headline_list(df, title_headline):
+    return df[title_headline].values
+
+
 def sort_words_by_most_frequent_in_descending_order(df, title_headline):
+    word_list = get_df_title_headline_list(df, title_headline)
     word_count_dict = dict()
-    for word_split in df[title_headline + '_split_lower']:
-        for word in word_split:
+    for title in word_list:
+        title = str(title)
+        title_split = title.split(' ')
+        for word in title_split:
+            word = remove_ch(word)
             if word == '':
                 continue
             if word in word_count_dict:
@@ -22,97 +31,93 @@ def sort_words_by_most_frequent_in_descending_order(df, title_headline):
                 word_count_dict[word] = 0
     word_count_dict = {k: v for k, v in sorted(word_count_dict.items(), key=lambda item: item[1], reverse=True)}
     # return word_count_dict
-    return list(word_count_dict)[:5]
-    # return list(word_count_dict)[:100]
+    # return list(word_count_dict)[:5]
+    return list(word_count_dict)[:100]
     # return list(word_count_dict)
 
 
+def print_most_frequent_words_in_title_and_headline(df, groupby_column):
+    # remove duplicate abc
+    abc_set_list = list(set(df[groupby_column].to_list()))
+    # print
+    for abc in abc_set_list:
+        date_df = df[df[groupby_column] == abc]
+        print(abc, 'Title', sort_words_by_most_frequent_in_descending_order(date_df, 'Title'))
+    for abc in abc_set_list:
+        date_df = df[df[groupby_column] == abc]
+        print(abc, 'Headline', sort_words_by_most_frequent_in_descending_order(date_df, 'Headline'))
+
+
+def concat_same_platform_df(platform, topic_list):
+    feedback_df = pd.read_csv('feedback/' + platform + '_' + topic_list[0] + '.csv')
+    for i in range(1, len(topic_list)):
+        feedback_df = pd.concat([feedback_df, pd.read_csv('feedback/' + platform + '_' + topic_list[i] + '.csv')],
+                                ignore_index=True)
+    feedback_df['IDLink'] = feedback_df['IDLink'].astype('int64')
+    return feedback_df
+
+
 # read csv
-df = ps.read_csv('News_Final.csv')
+df = pd.read_csv('News_Final.csv')
 df = df.dropna()
-# create title_split_lower column
+
+# PublishDate to PublishDate_date column
+all_date_list = df['PublishDate'].values
+df['PublishDate_date'] = [date_time.split(' ')[0] for date_time in all_date_list]
+
 df['Title_split_lower'] = [[remove_ch(title_s).lower() for title_s in title.split(' ')] for title in df['Title']]
 df['Headline_split_lower'] = [[remove_ch(title_s).lower() for title_s in title.split(' ')] for title in df['Headline']]
-# print(df['title_split_lower'])
-# print(df['headline_split_lower'])
-
 
 # (1) total
-# print('Title', sort_words_by_most_frequent_in_descending_order(df, 'Title'))
-# print('Headline', sort_words_by_most_frequent_in_descending_order(df, 'Headline'))
+print('Title', sort_words_by_most_frequent_in_descending_order(df, 'Title'))
+print('Headline', sort_words_by_most_frequent_in_descending_order(df, 'Headline'))
+# (1) per day
+print_most_frequent_words_in_title_and_headline(df, 'PublishDate_date')
+# (1) per topic
+print_most_frequent_words_in_title_and_headline(df, 'Topic')
 
-# # (1) per day
-# # split date_time to two column
-# all_date_list = df['PublishDate'].values
-# date_list = list()
-# for date_time in all_date_list:
-#     data_time_split = date_time.split(' ')
-#     date_list.append(data_time_split[0])
-# df['PublishDate_date'] = date_list
-# day_groups = df.groupby('PublishDate_date').groups
-# for day, index_list in day_groups.items():
-#     print(day, sort_words_by_most_frequent_in_descending_order(df.loc[day_groups[day], :], 'Title'))
-#
-# for day, index_list in day_groups.items():
-#     print(day, sort_words_by_most_frequent_in_descending_order(df.loc[day_groups[day], :], 'Headline'))
-
-# # (1) per topic
-# topic_groups = df.groupby('Topic').groups
-# for topic, index_list in topic_groups.items():
-#     print(topic, sort_words_by_most_frequent_in_descending_order(df.loc[topic_groups[topic], :], 'Title'))
-# for topic, index_list in topic_groups.items():
-#     print(topic, sort_words_by_most_frequent_in_descending_order(df.loc[topic_groups[topic], :], 'Headline'))
-
-# # (2) get date, hour two column
-# all_date_list = df['PublishDate'].values
-# date_list = list()
-# hour_list = list()
-# for date_time in all_date_list:
-#     data_time_split = date_time.split(' ')
-#     date_list.append(data_time_split[0])
-#     hour = data_time_split[1].split(':')[0]
-#     hour_list.append(hour)
-# df['PublishDate_date'] = date_list
-# df['PublishDate_hour'] = hour_list
-# # by day
-# groupby_date_df = df.groupby('PublishDate_date')
-# print(groupby_date_df['Facebook'].mean())
-# print(groupby_date_df['GooglePlus'].mean())
-# print(groupby_date_df['LinkedIn'].mean())
-# # by hour
-# groupby_hour_df = df.groupby('PublishDate_hour')
-# print(groupby_hour_df['Facebook'].mean())
-# print(groupby_hour_df['GooglePlus'].mean())
-# print(groupby_hour_df['LinkedIn'].mean())
+# (2) get date, hour two column
+platform_list = ['Facebook', 'GooglePlus', 'LinkedIn']
+topic_list = ['Economy', 'Microsoft', 'Obama', 'Palestine']
+hours = 144 / 3
+days = 2
+for platform in platform_list:
+    feedback_df = concat_same_platform_df(platform, topic_list)
+    feedback_df['average_popularity_by_hour'] = feedback_df['TS144'] / hours
+    feedback_df['average_popularity_by_day'] = feedback_df['TS144'] / 2
+    feedback_df[['IDLink', 'average_popularity_by_hour']].to_csv('output/' + platform + 'by_hour' + '.csv')
+    feedback_df[['IDLink', 'average_popularity_by_day']].to_csv('output/' + platform + 'by_day' + '.csv')
 
 # # (3)
-# print(df.groupby('Topic')['SentimentTitle'].sum())
-# print(df.groupby('Topic')['SentimentHeadline'].mean())
-# print(df.groupby('Topic')['SentimentTitle'].sum())
-# print(df.groupby('Topic')['SentimentHeadline'].mean())
+print(df.groupby('Topic').sum())
+print(df.groupby('Topic').mean())
+
 
 # (4)
-# def get_co_occurrence_matrices(word_list, title_headline_split_lower_df):
-#     temp_list = [0 for i in range(len(word_list))]
-#     # co_occurrence_matrices_df
-#     dict_for_df = {word_list[i]: temp_list for i in range(len(temp_list))}
-#     dict_for_df['index'] = word_list
-#     co_occurrence_matrices_df = pd.DataFrame(dict_for_df).set_index('index')
-#     for most_word in word_list:
-#         for i in range(len(word_list)):
-#             for title in title_headline_split_lower_df:
-#                 if most_word in title and word_list[i] in title:
-#                     # print(most_word, most_word_of_title_list[i], title)
-#                     co_occurrence_matrices_df[most_word][i] += 1
-#     # print(co_occurrence_matrices_df)
-#     return co_occurrence_matrices_df
-#
-#
-# topic_groups = df.groupby('Topic').groups
-# for topic, index_list in topic_groups.items():
-#     word_list = sort_words_by_most_frequent_in_descending_order(df.loc[index_list, :], 'Title')
-#     print(get_co_occurrence_matrices(word_list, df['title_split_lower']))
-#
-# for topic, index_list in topic_groups.items():
-#     word_list = sort_words_by_most_frequent_in_descending_order(df.loc[index_list, :], 'Headline')
-#     print(get_co_occurrence_matrices(word_list, df['headline_split_lower']))
+def get_co_occurrence_matrices(word_list, title_headline_split_lower_df):
+    temp_list = [0 for i in range(len(word_list))]
+    # co_occurrence_matrices_df
+    dict_for_df = {word_list[i]: temp_list for i in range(len(temp_list))}
+    dict_for_df['index'] = word_list
+    co_occurrence_matrices_df = pd.DataFrame(dict_for_df).set_index('index')
+    for most_word in word_list:
+        for i in range(len(word_list)):
+            for title in title_headline_split_lower_df:
+                if most_word in title and word_list[i] in title:
+                    # print(most_word, most_word_of_title_list[i], title)
+                    co_occurrence_matrices_df[most_word][i] += 1
+    # print(co_occurrence_matrices_df)
+    return co_occurrence_matrices_df
+
+
+topic_groups = df.groupby('Topic').groups
+for topic, index_list in topic_groups.items():
+    word_list = sort_words_by_most_frequent_in_descending_order(df.loc[index_list, :], 'Title')
+    print(get_co_occurrence_matrices(word_list, df['Title_split_lower']))
+
+for topic, index_list in topic_groups.items():
+    word_list = sort_words_by_most_frequent_in_descending_order(df.loc[index_list, :], 'Headline')
+    print(get_co_occurrence_matrices(word_list, df['Headline_split_lower']))
+
+end_time = time.time()
+print('time', end_time - start_time, 's')
