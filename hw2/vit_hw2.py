@@ -73,7 +73,6 @@ def print_most_frequent_words_in_title_and_headline(total_day_topic, by_column):
         sort_words_by_most_frequent_in_descending_order(total_day_topic, date_df, 'Headline')
 
 
-# todo: reuse
 def read_csv_to_ps_df(path, sqlContext):
     pd_df = pd.read_csv(path)
     column_list = list(pd_df.columns)
@@ -103,7 +102,6 @@ df = read_csv_to_ps_df('/opt/spark/hw2/News_Final.csv', sqlContext)
 # change dtype
 df['SentimentTitle'] = df['SentimentTitle'].astype('float32')
 df['SentimentHeadline'] = df['SentimentHeadline'].astype('float32')
-
 
 print("----------------------------------------(1)------------------------------------------")
 # (1) total
