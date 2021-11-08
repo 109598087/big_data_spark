@@ -55,8 +55,7 @@ def sort_words_by_most_frequent_in_descending_order(total_day_topic, df, title_h
             else:
                 word_count_dict[word] = 1
     word_count_dict = {k: v for k, v in sorted(word_count_dict.items(), key=lambda item: item[1], reverse=True)}
-    if total_day_topic != '':
-        print(total_day_topic, list(word_count_dict)[:5])
+    print(total_day_topic, word_count_dict)
     #return list(word_count_dict)[:5]
     return list(word_count_dict)[:100]
     # return list(word_count_dict)
