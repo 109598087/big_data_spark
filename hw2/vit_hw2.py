@@ -156,41 +156,36 @@ occurrence_df = ps.DataFrame(occurrence_dict)
 for topic in topic_list:
     # new co_occurrence_df
     most_word_list = se_topic_most_word_dict[topic]
-    # print(most_word_list)
     co_occurrence_df = create_new_co_occurrence_matrices(most_word_list)
-    # print(co_occurrence_df)
-
-    # # count co_occurrence
-    # # find all 組合
     all_product_list = list(product(most_word_list, most_word_list))
     for com in all_product_list:
         occurrence_number = occurrence_df[(occurrence_df[com[0]] == 1) & (occurrence_df[com[1]] == 1)][com[0]].count()
         co_occurrence_df[com[0]][com[1]] = occurrence_number
     print(co_occurrence_df)
 
-print('##########################################################################################')
-# Headline
-all_topic_most_word_list, se_topic_most_word_dict = get_all_topic_most_word_list(df, topic_list, 'Headline')
-# title_split_list
-title_split_list = [get_title_word_list(title) for title in df['Headline'].to_numpy()]
-occurrence_dict = dict()
-for word in all_topic_most_word_list:
-    occurrence_dict[word] = [1 if word in title_split else 0 for title_split in title_split_list]
-occurrence_df = ps.DataFrame(occurrence_dict)
-# print(occurrence_df)
-
-for topic in topic_list:
-    # new co_occurrence_df
-    most_word_list = se_topic_most_word_dict[topic]
-    # print(most_word_list)
-    co_occurrence_df = create_new_co_occurrence_matrices(most_word_list)
-    # print(co_occurrence_df)
-
-    # # count co_occurrence
-    # # find all 組合
-    all_product_list = list(product(most_word_list, most_word_list))
-    for com in all_product_list:
-        occurrence_number = occurrence_df[(occurrence_df[com[0]] == 1) & (occurrence_df[com[1]] == 1)][com[0]].count()
-        co_occurrence_df[com[0]][com[1]] = occurrence_number
-    print(co_occurrence_df)
+# print('##########################################################################################')
+# # Headline
+# all_topic_most_word_list, se_topic_most_word_dict = get_all_topic_most_word_list(df, topic_list, 'Headline')
+# # title_split_list
+# title_split_list = [get_title_word_list(title) for title in df['Headline'].to_numpy()]
+# occurrence_dict = dict()
+# for word in all_topic_most_word_list:
+#     occurrence_dict[word] = [1 if word in title_split else 0 for title_split in title_split_list]
+# occurrence_df = ps.DataFrame(occurrence_dict)
+# # print(occurrence_df)
+#
+# for topic in topic_list:
+#     # new co_occurrence_df
+#     most_word_list = se_topic_most_word_dict[topic]
+#     # print(most_word_list)
+#     co_occurrence_df = create_new_co_occurrence_matrices(most_word_list)
+#     # print(co_occurrence_df)
+#
+#     # # count co_occurrence
+#     # # find all 組合
+#     all_product_list = list(product(most_word_list, most_word_list))
+#     for com in all_product_list:
+#         occurrence_number = occurrence_df[(occurrence_df[com[0]] == 1) & (occurrence_df[com[1]] == 1)][com[0]].count()
+#         co_occurrence_df[com[0]][com[1]] = occurrence_number
+#     print(co_occurrence_df)
 

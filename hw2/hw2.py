@@ -158,9 +158,8 @@ print('#########################################################################
 all_topic_most_word_list, se_topic_most_word_dict = get_all_topic_most_word_list(df, topic_list, 'Headline')
 # title_split_list
 title_split_list = [get_title_word_list(title) for title in df['Headline'].to_numpy()]
-occurrence_dict = dict()
-for word in all_topic_most_word_list:
-    occurrence_dict[word] = [1 if word in title_split else 0 for title_split in title_split_list]
+occurrence_dict = {word: [1 if word in title_split else 0 for title_split in title_split_list] for word in
+                   all_topic_most_word_list}
 occurrence_df = pd.DataFrame(occurrence_dict)
 # print(occurrence_df)
 
