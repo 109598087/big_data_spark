@@ -1,27 +1,7 @@
-import time
-import email.message
-import smtplib
 from itertools import product
 
 
-def send_email_for_notify_done(time=0):
-    msg = email.message.EmailMessage()
-    msg["From"] = "t109598087@ntut.org.tw"
-    msg["To"] = "t109598087@ntut.org.tw"
-    msg["Subject"] = "Done"
 
-    msg.set_content("Done!")
-    msg.set_content("Time:", time)
-
-    server = smtplib.SMTP_SSL("smtp.gmail.com", 465)
-    server.login("t109598087@ntut.org.tw", "Puppy802138")
-    server.send_message(msg)
-    server.close()
-
-
-start_time = time.time()
-
-import pandas as pd
 import pyspark.pandas as ps
 from pyspark import SparkConf, SparkContext
 from pyspark.sql import SQLContext
@@ -73,15 +53,6 @@ def print_most_frequent_words_in_title_and_headline(total_day_topic, by_column):
         sort_words_by_most_frequent_in_descending_order(total_day_topic, date_df, 'Headline')
 
 
-def read_csv_to_ps_df(path, sqlContext):
-    pd_df = pd.read_csv(path)
-    column_list = list(pd_df.columns)
-    schema = StructType([StructField(column, StringType(), False) for column in column_list])
-    spark_df = sqlContext.createDataFrame(pd_df, schema)
-    ps_df = spark_df.to_pandas_on_spark()
-    ps_df.dropna()
-    return ps_df
-
 
 def concat_same_platform_df(platform, topic_list, sqlContext):
     feedback_df = read_csv_to_ps_df('hw2/feedback/' + platform + '_' + topic_list[0] + '.csv', sqlContext)
@@ -115,8 +86,6 @@ print_most_frequent_words_in_title_and_headline('day', 'PublishDate_date')
 # (1) per topic
 print_most_frequent_words_in_title_and_headline('topic', 'Topic')
 
-time1 = time.time() - start_time
-print('1 ok:', time1)
 # (2) get date, hour two column
 print("----------------------------------------(2)------------------------------------------")
 platform_list = ['Facebook', 'GooglePlus', 'LinkedIn']
@@ -127,21 +96,19 @@ for platform in platform_list:
     feedback_df = concat_same_platform_df(platform, topic_list, sqlContext)
     feedback_df['TS144'] = feedback_df['TS144'].astype('float32')
     feedback_df['average_popularity_by_hour'] = feedback_df['TS144'] / hours
-    feedback_df['average_popularity_by_day'] = feedback_df['TS144'] / 2
+    feedback_df['average_popularity_by_day'] = feedback_df['TS144'] / days
     feedback_df[['IDLink', 'average_popularity_by_hour']].to_pandas().to_csv(
         'hw2/output/' + platform + 'by_hour' + '.csv')
     feedback_df[['IDLink', 'average_popularity_by_day']].to_pandas().to_csv(
         'hw2/output/' + platform + 'by_day' + '.csv')
 
-time2 = time.time() - start_time
-print('2 ok:', time2)
+
+
 # (3)
 print("----------------------------------------(3)------------------------------------------")
 print(df.groupby('Topic').sum())
 print(df.groupby('Topic').mean())
 
-time3 = time.time() - start_time
-print('3 ok:', time3)
 
 
 # (4) topic
@@ -227,6 +194,3 @@ for topic in topic_list:
         co_occurrence_df[com[0]][com[1]] = occurrence_number
     print(co_occurrence_df)
 
-end_time = time.time()
-print('time', end_time - start_time, 's')
-send_email_for_notify_done(str(end_time - start_time))
