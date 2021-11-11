@@ -1,9 +1,8 @@
-import pyspark.pandas as ps
-from pyspark import SparkConf, SparkContext
-from pyspark.sql import SQLContext
-from pyspark.sql.types import *
 from itertools import product
 import pandas as pd
+import time
+
+start_time = time.time()
 
 
 def remove_ch(word):
@@ -14,7 +13,7 @@ def remove_ch(word):
     return word
 
 
-def get_word_count_dict(df):
+def get_word_count_dict(df):  # todo: map reduce
     word_list = df.values
     word_count_dict = dict()
     for title in word_list:
@@ -34,6 +33,7 @@ def get_word_count_dict(df):
 def sort_word_count_dict_in_descending_order(word_count_dict):
     return {k: v for k, v in sorted(word_count_dict.items(), key=lambda item: item[1], reverse=True)}
 
+
 def print_word_count_dict_groupby_column_and_title_headline(title_headline, groupby_column='total'):
     if groupby_column != 'total':
         day_set_list = list(set(df[groupby_column].to_list()))
@@ -47,25 +47,24 @@ def print_word_count_dict_groupby_column_and_title_headline(title_headline, grou
         word_count_dict = sort_word_count_dict_in_descending_order(word_count_dict)
         print('total', title_headline, list(word_count_dict)[:5])
 
-def read_csv_to_ps_df(path, sqlContext):
-    pd_df = pd.read_csv(path)
-    column_list = list(pd_df.columns)
-    schema = StructType([StructField(column, StringType(), False) for column in column_list])
-    spark_df = sqlContext.createDataFrame(pd_df, schema)
-    ps_df = spark_df.to_pandas_on_spark()
-    ps_df.dropna()
-    return ps_df
+
+# def read_csv_to_ps_df(path, sqlContext):
+#     pd_df = pd.read_csv(path)
+#     column_list = list(pd_df.columns)
+#     schema = StructType([StructField(column, StringType(), False) for column in column_list])
+#     spark_df = sqlContext.createDataFrame(pd_df, schema)
+#     ps_df = spark_df.to_pandas_on_spark()
+#     ps_df.dropna()
+#     return ps_df
 
 
-conf = SparkConf().setAppName('hw2').setMaster("spark://10.0.2.15:7077")
-sc = SparkContext()
-sqlContext = SQLContext(sc)
+# conf = SparkConf().setAppName('hw2').setMaster("spark://10.0.2.15:7077")
+# sc = SparkContext()
+# sqlContext = SQLContext(sc)
 
+# df = read_csv_to_ps_df('File:///opt/spark/hw2/News_Final.csv', sqlContext)
+df = pd.read_csv('News_Final.csv', sep=',')
 
-df = read_csv_to_ps_df('File:///opt/spark/hw2/News_Final.csv', sqlContext)
-# df = ps.read_csv('File:///opt/spark/hw2/News_Final.csv', sep=',')
-
-'''
 # change dtype
 df['SentimentTitle'] = df['SentimentTitle'].astype('float32')
 df['SentimentHeadline'] = df['SentimentHeadline'].astype('float32')
@@ -89,10 +88,11 @@ print("----------------------------------------(2)------------------------------
 
 
 def concat_same_platform_df(platform, topic_list):
-    feedback_df = ps.read_csv('File:///opt/spark/hw2/feedback/' + platform + '_' + topic_list[0] + '.csv')
+    feedback_df = pd.read_csv('../hw2/feedback/' + platform + '_' + topic_list[0] + '.csv')
     for i in range(1, len(topic_list)):
-        feedback_df = ps.concat([feedback_df, ps.read_csv('File:///opt/spark/hw2/feedback/' + platform + '_' + topic_list[i] + '.csv')],
-                                ignore_index=True)
+        feedback_df = pd.concat(
+            [feedback_df, pd.read_csv('../hw2/feedback/' + platform + '_' + topic_list[i] + '.csv')],
+            ignore_index=True)
     feedback_df['IDLink'] = feedback_df['IDLink'].astype('int64')
     return feedback_df
 
@@ -106,14 +106,14 @@ for platform in platform_list:
     feedback_df['TS144'] = feedback_df['TS144'].astype('float32')
     feedback_df['average_popularity_by_hour'] = feedback_df['TS144'] / hours
     feedback_df['average_popularity_by_day'] = feedback_df['TS144'] / days
-    feedback_df[['IDLink', 'average_popularity_by_hour']].to_csv('File:///opt/spark/hw2/output/' + platform + 'by_hour')
-    feedback_df[['IDLink', 'average_popularity_by_day']].to_csv('File:///opt/spark/hw2/output/' + platform + 'by_day')
+    feedback_df[['IDLink', 'average_popularity_by_hour']].to_csv('hw2/output/' + platform + 'by_hour')
+    feedback_df[['IDLink', 'average_popularity_by_day']].to_csv(
+        'hw2/output/' + platform + 'by_day')  # todo: to one file
 
 # (3)
 print("----------------------------------------(3)------------------------------------------")
 print(df.groupby('Topic').sum())
 print(df.groupby('Topic').mean())
-'''
 
 # (4) topic
 print("----------------------------------------(4)------------------------------------------")
@@ -157,7 +157,8 @@ def print_co_occurrence_matrices(title_headline):
     title_split_list = [get_title_word_list(title) for title in df[title_headline].to_numpy()]
     occurrence_dict = dict()
     for i in range(len(all_topic_most_word_list)):
-        occurrence_dict[all_topic_most_word_list[i]] = [1 if all_topic_most_word_list[i] in title_split else 0 for title_split in title_split_list]
+        occurrence_dict[all_topic_most_word_list[i]] = [1 if all_topic_most_word_list[i] in title_split else 0 for
+                                                        title_split in title_split_list]
     occurrence_df = pd.DataFrame(occurrence_dict)
     # print(occurrence_df)
 
@@ -176,3 +177,28 @@ def print_co_occurrence_matrices(title_headline):
 
 print_co_occurrence_matrices('Title')
 print_co_occurrence_matrices('Headline')
+
+import email.message
+import smtplib
+
+
+def send_email_for_notify_done(time='0'):
+    msg = email.message.EmailMessage()
+    msg["From"] = "t109598087@ntut.org.tw"
+    msg["To"] = "t109598087@ntut.org.tw"
+    msg["Subject"] = "Done"
+
+    msg.set_content("Done!")
+    msg.set_content("Time:", time)
+
+    server = smtplib.SMTP_SSL("smtp.gmail.com", 465)
+    server.login("t109598087@ntut.org.tw", "Puppy802138")
+    server.send_message(msg)
+    server.close()
+
+
+end_time = time.time()
+total_time = str(end_time - start_time)
+
+send_email_for_notify_done(total_time)
+print(total_time)
