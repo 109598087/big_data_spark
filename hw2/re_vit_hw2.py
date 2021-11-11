@@ -4,6 +4,8 @@ from pyspark.sql import SQLContext
 from itertools import product
 import pandas as pd
 import time
+import email.message
+import smtplib
 
 start_time = time.time()
 
@@ -43,32 +45,6 @@ def print_word_count_dict_groupby_column_and_title_headline(title_headline, grou
         print('total', title_headline, list(title_word_collect)[:5])
 
 
-conf = SparkConf().setAppName('hw2').setMaster("spark://10.0.2.15:7077")
-sc = SparkContext()
-sqlContext = SQLContext(sc)
-
-df = pd.read_csv('hw2/News_Final.csv')
-
-# change dtype
-df['SentimentTitle'] = df['SentimentTitle'].astype('float32')
-df['SentimentHeadline'] = df['SentimentHeadline'].astype('float32')
-# PublishDate to PublishDate_date column
-all_date_list = df['PublishDate'].values
-df['PublishDate_date'] = [date_time.split(' ')[0] for date_time in all_date_list]
-
-print("----------------------------------------(1)------------------------------------------")
-print_word_count_dict_groupby_column_and_title_headline('Title', groupby_column='total')
-print_word_count_dict_groupby_column_and_title_headline('Headline', groupby_column='total')
-
-print_word_count_dict_groupby_column_and_title_headline('Title', groupby_column='PublishDate_date')
-print_word_count_dict_groupby_column_and_title_headline('Headline', groupby_column='PublishDate_date')
-
-print_word_count_dict_groupby_column_and_title_headline('Title', groupby_column='Topic')
-print_word_count_dict_groupby_column_and_title_headline('Headline', groupby_column='Topic')
-
-print("----------------------------------------(2)------------------------------------------")
-
-
 def concat_same_platform_df(platform, topic_list):
     feedback_df = ps.read_csv('File:///opt/spark/hw2/feedback/' + platform + '_' + topic_list[0] + '.csv')
     for i in range(1, len(topic_list)):
@@ -77,34 +53,6 @@ def concat_same_platform_df(platform, topic_list):
             ignore_index=True)
     feedback_df['IDLink'] = feedback_df['IDLink'].astype('int64')
     return feedback_df
-
-
-platform_list = ['Facebook', 'GooglePlus', 'LinkedIn']
-topic_list = ['Economy', 'Microsoft', 'Obama', 'Palestine']
-hours = 144 / 3
-days = 2
-for platform in platform_list:
-    feedback_df = concat_same_platform_df(platform, topic_list)
-    feedback_df['TS144'] = feedback_df['TS144'].astype('float32')
-    feedback_df['average_popularity_by_hour'] = feedback_df['TS144'] / hours
-    feedback_df['average_popularity_by_day'] = feedback_df['TS144'] / days
-    feedback_df[['IDLink', 'average_popularity_by_hour']].to_csv('File:///opt/spark/hw2/output/' + platform + 'by_hour')
-    feedback_df[['IDLink', 'average_popularity_by_day']].to_csv(
-        'File:///opt/spark/hw2/output/' + platform + 'by_day')  # todo: to one file
-
-print("----------------------------------------(3)------------------------------------------")
-print(df.groupby('Topic').sum())
-print(df.groupby('Topic').mean())
-
-# (4) topic
-print("----------------------------------------(4)------------------------------------------")
-
-
-def get_100_words(df, topic, title_headline):
-    topic_df = df[df['Topic'] == topic][title_headline]
-    word_counts_collect = get_word_counts_collect(topic_df)
-    word_counts_sorted_dict = sort_word_count_collect_in_descending_order(word_counts_collect)
-    return list(word_counts_sorted_dict)[:100]
 
 
 def get_title_word_list(title):
@@ -131,7 +79,7 @@ def create_new_co_occurrence_matrices(most_word_list):
     co_occurrence_dict['index'] = most_word_list
     for word in most_word_list:
         co_occurrence_dict[word] = temp_list
-    return pd.DataFrame(co_occurrence_dict).set_index('index')  # todo pd->ps
+    return pd.DataFrame(co_occurrence_dict).set_index('index')
 
 
 def print_co_occurrence_matrices(title_headline):
@@ -161,11 +109,11 @@ def print_co_occurrence_matrices(title_headline):
         print(co_occurrence_df)
 
 
-print_co_occurrence_matrices('Title')
-print_co_occurrence_matrices('Headline')
-
-import email.message
-import smtplib
+def get_100_words(df, topic, title_headline):
+    topic_df = df[df['Topic'] == topic][title_headline]
+    word_counts_collect = get_word_counts_collect(topic_df)
+    word_counts_sorted_dict = sort_word_count_collect_in_descending_order(word_counts_collect)
+    return list(word_counts_sorted_dict)[:100]
 
 
 def send_email_for_notify_done(time='0'):
@@ -182,6 +130,51 @@ def send_email_for_notify_done(time='0'):
     server.send_message(msg)
     server.close()
 
+
+conf = SparkConf().setAppName('hw2').setMaster("spark://10.0.2.15:7077")
+sc = SparkContext()
+sqlContext = SQLContext(sc)
+
+df = pd.read_csv('hw2/News_Final.csv')
+
+# change dtype
+df['SentimentTitle'] = df['SentimentTitle'].astype('float32')
+df['SentimentHeadline'] = df['SentimentHeadline'].astype('float32')
+# PublishDate to PublishDate_date column
+all_date_list = df['PublishDate'].values
+df['PublishDate_date'] = [date_time.split(' ')[0] for date_time in all_date_list]
+
+print("----------------------------------------(1)------------------------------------------")
+print_word_count_dict_groupby_column_and_title_headline('Title', groupby_column='total')
+print_word_count_dict_groupby_column_and_title_headline('Headline', groupby_column='total')
+
+print_word_count_dict_groupby_column_and_title_headline('Title', groupby_column='PublishDate_date')
+print_word_count_dict_groupby_column_and_title_headline('Headline', groupby_column='PublishDate_date')
+
+print_word_count_dict_groupby_column_and_title_headline('Title', groupby_column='Topic')
+print_word_count_dict_groupby_column_and_title_headline('Headline', groupby_column='Topic')
+
+print("----------------------------------------(2)------------------------------------------")
+platform_list = ['Facebook', 'GooglePlus', 'LinkedIn']
+topic_list = ['Economy', 'Microsoft', 'Obama', 'Palestine']
+hours = 144 / 3
+days = 2
+for platform in platform_list:
+    feedback_df = concat_same_platform_df(platform, topic_list)
+    feedback_df['TS144'] = feedback_df['TS144'].astype('float32')
+    feedback_df['average_popularity_by_hour'] = feedback_df['TS144'] / hours
+    feedback_df['average_popularity_by_day'] = feedback_df['TS144'] / days
+    feedback_df[['IDLink', 'average_popularity_by_hour']].to_csv('File:///opt/spark/hw2/output/' + platform + 'by_hour')
+    feedback_df[['IDLink', 'average_popularity_by_day']].to_csv(
+        'File:///opt/spark/hw2/output/' + platform + 'by_day')
+
+print("----------------------------------------(3)------------------------------------------")
+print(df.groupby('Topic')[['SentimentTitle', 'SentimentHeadline']].sum())
+print(df.groupby('Topic')[['SentimentTitle', 'SentimentHeadline']].mean())
+
+print("----------------------------------------(4)------------------------------------------")
+print_co_occurrence_matrices('Title')
+print_co_occurrence_matrices('Headline')
 
 end_time = time.time()
 total_time = str(end_time - start_time)
