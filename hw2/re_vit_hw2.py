@@ -7,6 +7,8 @@ import time
 import email.message
 import smtplib
 
+from pyspark.sql.types import *
+
 start_time = time.time()
 
 
@@ -116,19 +118,14 @@ def get_100_words(df, topic, title_headline):
     return list(word_counts_sorted_dict)[:100]
 
 
-def send_email_for_notify_done(time='0'):
-    msg = email.message.EmailMessage()
-    msg["From"] = "t109598087@ntut.org.tw"
-    msg["To"] = "t109598087@ntut.org.tw"
-    msg["Subject"] = "Done"
-
-    msg.set_content("Done!")
-    msg.set_content("Time:", time)
-
-    server = smtplib.SMTP_SSL("smtp.gmail.com", 465)
-    server.login("t109598087@ntut.org.tw", "Puppy802138")
-    server.send_message(msg)
-    server.close()
+def read_csv_to_ps_df(pd_df, sqlContext):
+    # pd_df = pd.read_csv(path)
+    column_list = list(pd_df.columns)
+    schema = StructType([StructField(column, StringType(), False) for column in column_list])
+    spark_df = sqlContext.createDataFrame(pd_df, schema)
+    ps_df = spark_df.to_pandas_on_spark()
+    ps_df.dropna()
+    return ps_df
 
 
 conf = SparkConf().setAppName('hw2').setMaster("spark://10.0.2.15:7077")
@@ -138,11 +135,11 @@ sqlContext = SQLContext(sc)
 df = pd.read_csv('hw2/News_Final.csv')
 
 # change dtype
-df['SentimentTitle'] = df['SentimentTitle'].astype('float32')
-df['SentimentHeadline'] = df['SentimentHeadline'].astype('float32')
+
 # PublishDate to PublishDate_date column
 all_date_list = df['PublishDate'].values
 df['PublishDate_date'] = [date_time.split(' ')[0] for date_time in all_date_list]
+
 
 print("----------------------------------------(1)------------------------------------------")
 print_word_count_dict_groupby_column_and_title_headline('Title', groupby_column='total')
@@ -153,6 +150,7 @@ print_word_count_dict_groupby_column_and_title_headline('Headline', groupby_colu
 
 print_word_count_dict_groupby_column_and_title_headline('Title', groupby_column='Topic')
 print_word_count_dict_groupby_column_and_title_headline('Headline', groupby_column='Topic')
+
 
 print("----------------------------------------(2)------------------------------------------")
 platform_list = ['Facebook', 'GooglePlus', 'LinkedIn']
@@ -168,9 +166,15 @@ for platform in platform_list:
     feedback_df[['IDLink', 'average_popularity_by_day']].to_csv(
         'File:///opt/spark/hw2/output/' + platform + 'by_day')
 
+df1 = read_csv_to_ps_df(df, sqlContext)
+df1['SentimentTitle'] = df1['SentimentTitle'].astype('float32')
+df1['SentimentHeadline'] = df1['SentimentHeadline'].astype('float32')
+
 print("----------------------------------------(3)------------------------------------------")
-print(df.groupby('Topic')[['SentimentTitle', 'SentimentHeadline']].sum())
-print(df.groupby('Topic')[['SentimentTitle', 'SentimentHeadline']].mean())
+df1['Sentiment_score_sum'] = df1['SentimentTitle'] + df1['SentimentHeadline']
+df1['Sentiment_score_mean'] = (df1['SentimentTitle'] + df1['SentimentHeadline']) / 2
+print(df1.groupby('Topic')['Sentiment_score_sum'].sum())
+print(df1.groupby('Topic')['Sentiment_score_mean'].mean())
 
 print("----------------------------------------(4)------------------------------------------")
 print_co_occurrence_matrices('Title')
@@ -179,5 +183,4 @@ print_co_occurrence_matrices('Headline')
 end_time = time.time()
 total_time = str(end_time - start_time)
 
-send_email_for_notify_done(total_time)
 print(total_time)
