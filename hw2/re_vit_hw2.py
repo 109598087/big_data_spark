@@ -40,11 +40,11 @@ def print_word_count_dict_groupby_column_and_title_headline(title_headline, grou
             date_df = df[df[groupby_column] == day][title_headline]
             title_word_collect = get_word_counts_collect(date_df)
             title_word_collect = sort_word_count_collect_in_descending_order(title_word_collect)
-            print(day, title_headline, list(title_word_collect)[:5])
+            print(day, title_headline, title_word_collect)
     else:
         title_word_collect = get_word_counts_collect(df[title_headline])
         title_word_collect = sort_word_count_collect_in_descending_order(title_word_collect)
-        print('total', title_headline, list(title_word_collect)[:5])
+        print('total', title_headline, title_word_collect)
 
 
 def concat_same_platform_df(platform, topic_list):
