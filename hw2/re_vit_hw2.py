@@ -21,10 +21,10 @@ def remove_ch(word):
 
 
 def get_word_counts_collect(df):
-    df.to_csv('hw2/input/input.csv', index=False, header=False)
+    df.to_csv('hw2/input/input.csv', index=False, header=False)  # todo: 直接用df->rdd
     words = sc.textFile("file:///opt/spark/hw2/input/input.csv").flatMap(
         lambda line: [remove_ch(word) for word in line.split(' ') if word != ''])
-    wordCounts = words.map(lambda word: (word, 1)).reduceByKey(lambda a, b: a + b)
+    wordCounts = words.map(lambda word: (word, 1 if len(word) > 0 else 0)).reduceByKey(lambda a, b: a + b)
     return wordCounts.collect()
 
 
@@ -84,7 +84,7 @@ def create_new_co_occurrence_matrices(most_word_list):
     return pd.DataFrame(co_occurrence_dict).set_index('index')
 
 
-def print_co_occurrence_matrices(title_headline):
+def print_co_occurrence_matrices(title_headline):  # todo: to file
     topic_list = list(set(df['Topic'].values))
 
     # Title
@@ -140,7 +140,6 @@ df = pd.read_csv('hw2/News_Final.csv')
 all_date_list = df['PublishDate'].values
 df['PublishDate_date'] = [date_time.split(' ')[0] for date_time in all_date_list]
 
-
 print("----------------------------------------(1)------------------------------------------")
 print_word_count_dict_groupby_column_and_title_headline('Title', groupby_column='total')
 print_word_count_dict_groupby_column_and_title_headline('Headline', groupby_column='total')
@@ -150,7 +149,6 @@ print_word_count_dict_groupby_column_and_title_headline('Headline', groupby_colu
 
 print_word_count_dict_groupby_column_and_title_headline('Title', groupby_column='Topic')
 print_word_count_dict_groupby_column_and_title_headline('Headline', groupby_column='Topic')
-
 
 print("----------------------------------------(2)------------------------------------------")
 platform_list = ['Facebook', 'GooglePlus', 'LinkedIn']
