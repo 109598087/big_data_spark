@@ -12,19 +12,47 @@ from pyspark.sql.types import *
 start_time = time.time()
 
 
-def remove_ch(word):
-    remove_ch_list = [',', '?', '\'', '$', ';', '.', '&', ':', '!', '#', "\"", '£', '/', '(', ')', '"""', '\xa0',
-                      '\x9d', "“", "-", ' ']
-    for ch in remove_ch_list:
-        word = word.lower().replace(ch, '')
+def read_news_data():
+    schema = StructType([
+        StructField("IDLink", IntegerType(), False),
+        StructField("Title", StringType(), False),
+        StructField("Headline", StringType(), False),
+        StructField("Source", StringType(), False),
+        StructField("Topic", StringType(), False),
+        StructField("PublishDate", TimestampType(), False),
+        StructField("SentimentTitle", DecimalType(), False),
+        StructField("SentimentHeadline", DecimalType(), False),
+        StructField("Facebook", IntegerType(), False),
+        StructField("GooglePlus", IntegerType(), False),
+        StructField("LinkedIn", IntegerType(), False),
+    ])
+    news_data_df = spark.read.format("csv").option("header", True).schema(schema).load(
+        "file:///opt/spark/HW2/News_Final.csv")
+    news_data_df = news_data_df.na.drop()  # delete null value
+    return news_data_df
+
+
+def remove_characters(word):
+    remove_list = ['.', '!', '?', ',', '\'', '/', '\\', ':', ';', '&', '(', ')', '[', ']', '"', '“', '”', '`', '%', '@',
+                   '«', '…', '€', '£', '$', '‹', '›', '^', '#', '*', '+', '~', '‘', '\s', '\x9d']  # '-'
+    for character in remove_list:
+        word = word.lower().replace(character, '')
     return word
 
 
+# def remove_ch(word):
+#     remove_ch_list = [',', '?', '\'', '$', ';', '.', '&', ':', '!', '#', "\"", '£', '/', '(', ')', '"""', '\xa0',
+#                       '\x9d', "“", "-", ' ']
+#     for ch in remove_ch_list:
+#         word = word.lower().replace(ch, '')
+#     return word
+
+
 def get_word_counts_collect(df):
-    df.to_csv('hw2/input/input.csv', index=False, header=False)  # todo: 直接用df->rdd
+    df.to_csv('hw2/input/input.csv', index=False, header=False)
     words = sc.textFile("file:///opt/spark/hw2/input/input.csv").flatMap(
         lambda line: [remove_ch(word) for word in line.split(' ') if word != ''])
-    wordCounts = words.map(lambda word: (word, 1 if len(word) > 0 else 0)).reduceByKey(lambda a, b: a + b)
+    wordCounts = words.map(lambda word: (word, 1)).reduceByKey(lambda a, b: a + b)
     return wordCounts.collect()
 
 
@@ -40,11 +68,11 @@ def print_word_count_dict_groupby_column_and_title_headline(title_headline, grou
             date_df = df[df[groupby_column] == day][title_headline]
             title_word_collect = get_word_counts_collect(date_df)
             title_word_collect = sort_word_count_collect_in_descending_order(title_word_collect)
-            print(day, title_headline, title_word_collect)
+            print(day, title_headline, list(title_word_collect)[:5])
     else:
         title_word_collect = get_word_counts_collect(df[title_headline])
         title_word_collect = sort_word_count_collect_in_descending_order(title_word_collect)
-        print('total', title_headline, title_word_collect)
+        print('total', title_headline, list(title_word_collect)[:5])
 
 
 def concat_same_platform_df(platform, topic_list):
@@ -84,7 +112,7 @@ def create_new_co_occurrence_matrices(most_word_list):
     return pd.DataFrame(co_occurrence_dict).set_index('index')
 
 
-def print_co_occurrence_matrices(title_headline):  # todo: to file
+def print_co_occurrence_matrices(title_headline):
     topic_list = list(set(df['Topic'].values))
 
     # Title
@@ -128,19 +156,38 @@ def read_csv_to_ps_df(pd_df, sqlContext):
     return ps_df
 
 
-conf = SparkConf().setAppName('hw2').setMaster("spark://10.0.2.15:7077")
-sc = SparkContext()
-sqlContext = SQLContext(sc)
+def print_result(result_rdd, file_name):
+    result_df = spark.createDataFrame(result_rdd, ['word', 'count']).orderBy("count", ascending=0)
+    pd = result_df.toPandas()
+    pd.to_csv(file_name + ".csv", sep=",", index=0)
 
-df = pd.read_csv('hw2/News_Final.csv')
+
+def count_words_in_total(column_name):
+    rdd = news_data_df.select(column_name).rdd
+    words = rdd.flatMap(lambda line: [remove_characters(word) for word in line[0].split()])
+    wordsCounts = words.map(lambda word: (word, 1 if len(word) > 0 else 0)).reduceByKey(lambda a, b: a + b)
+    print_result(wordsCounts, "count_" + column_name.lower() + "_words_in_total")
+
+
+from pyspark.sql import SparkSession
+
+spark = SparkSession.builder.master("local").appName("HW2").getOrCreate()
+news_data_df = read_news_data()
+
+# conf = SparkConf().setAppName('hw2').setMaster("spark://10.0.2.15:7077")
+# sc = SparkContext()
+# sqlContext = SQLContext(sc)
+
+# df = pd.read_csv('hw2/News_Final.csv')
 
 # change dtype
 
-# PublishDate to PublishDate_date column
-all_date_list = df['PublishDate'].values
-df['PublishDate_date'] = [date_time.split(' ')[0] for date_time in all_date_list]
+# # PublishDate to PublishDate_date column
+# all_date_list = df['PublishDate'].values
+# df['PublishDate_date'] = [date_time.split(' ')[0] for date_time in all_date_list]
 
 print("----------------------------------------(1)------------------------------------------")
+'''
 print_word_count_dict_groupby_column_and_title_headline('Title', groupby_column='total')
 print_word_count_dict_groupby_column_and_title_headline('Headline', groupby_column='total')
 
@@ -182,3 +229,4 @@ end_time = time.time()
 total_time = str(end_time - start_time)
 
 print(total_time)
+'''
