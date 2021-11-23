@@ -50,11 +50,27 @@ for i in range(len(d_list)):
     for shingles_2_word in shingles_2_word_list:
         str1 = list_to_str(shingles_2_word)
         characteristic_list.append(1 if str1 in d_list[i] else 0)
-    characteristic_matrix_dict['d' + str(i)] = characteristic_list
+    characteristic_matrix_dict['d' + str(i + 1)] = characteristic_list
 characteristic_matrix_dict['index'] = shingles_2_word_list
 characteristic_matrix_df = pd.DataFrame(characteristic_matrix_dict).set_index('index')
 print(characteristic_matrix_df)
 
-# # create MinHash
-# for i in range(1, 9 + 1):
-#     print((2 * i + 1) % 9, (5 * i + 2) % 9)
+# create MinHash
+
+aasdf = 9
+minhash_list = [[(2 * i + 1) % aasdf, (5 * i + 2) % aasdf] for i in range(1, aasdf + 1)]
+print(minhash_list)
+
+a_list = characteristic_matrix_df['d1']
+if a_list[0] == 1:
+    temp = [3, 7]
+else:
+    temp = [100, 100]
+result_list = list()
+result_list.append(temp)
+for i in range(1, len(a_list)):
+    if a_list[i] == 1:
+        temp = [min([temp[0], minhash_list[i][0]]), min([temp[1], minhash_list[i][1]])]
+    result_list.append(temp)
+
+print(result_list)
