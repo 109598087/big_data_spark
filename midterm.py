@@ -37,29 +37,24 @@ def list_to_str(a_list):
     return str1
 
 
-#
-# k = 2
-# shingles_2_word_list = list()
-# for d in d_list:
-#     shingles_2_word_list += get_k_shingles_list(k, d)
-#
-# shingles_2_word_list = remove_duplicate(shingles_2_word_list)
-#
-# characteristic_matrix_dict = dict()
-# for i in range(len(d_list)):
-#     characteristic_list = list()
-#     for shingles_2_word in shingles_2_word_list:
-#         shingles_2_word
-#         count = 0
-#         for word in shingles_2_word:
-#             if word in d_list[i]:
-#                 count += 1
-#         characteristic_list.append(1 if count == k else 0)
-#     characteristic_matrix_dict['d' + str(i)] = characteristic_list
-# characteristic_matrix_dict['index'] = shingles_2_word_list
-# characteristic_matrix_df = pd.DataFrame(characteristic_matrix_dict).set_index('index')
-# print(characteristic_matrix_df)
-#
-# # # create MinHash
-# # for i in range(1, 9 + 1):
-# #     print((2 * i + 1) % 9, (5 * i + 2) % 9)
+k = 2
+shingles_2_word_list = list()
+for d in d_list:
+    shingles_2_word_list += get_k_shingles_list(k, d)
+
+shingles_2_word_list = remove_duplicate(shingles_2_word_list)
+
+characteristic_matrix_dict = dict()
+for i in range(len(d_list)):
+    characteristic_list = list()
+    for shingles_2_word in shingles_2_word_list:
+        str1 = list_to_str(shingles_2_word)
+        characteristic_list.append(1 if str1 in d_list[i] else 0)
+    characteristic_matrix_dict['d' + str(i)] = characteristic_list
+characteristic_matrix_dict['index'] = shingles_2_word_list
+characteristic_matrix_df = pd.DataFrame(characteristic_matrix_dict).set_index('index')
+print(characteristic_matrix_df)
+
+# # create MinHash
+# for i in range(1, 9 + 1):
+#     print((2 * i + 1) % 9, (5 * i + 2) % 9)
