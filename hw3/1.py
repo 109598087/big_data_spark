@@ -29,20 +29,49 @@ sgm_file_list = [file for file in files if file.endswith('.sgm')]
 print(sgm_file_list)
 
 # get_all_shingles
-all_shingle = list()
+all_shingle_list = list()
 all_body_list = list()
+k = 2
 for sgm_file in sgm_file_list:
-    print(sgm_file)
+    print(sgm_file, end=', ')
     file_path = 'reuters21578/' + sgm_file
     document = BeautifulSoup(open(file_path, encoding="utf-8"), 'html.parser')
 
     # get_2_shingles 1 file
     body_list = document.find_all('body')
-    all_body_list += body_list
+    print(len(body_list))
     body_contents_list = [remove_ch(body.contents[0]) for body in body_list]
-    k_2_shingles_list = get_k_shingles_list(2, body_contents_list[0])
-    all_shingle += k_2_shingles_list
-print(all_shingle)
-print(len(all_shingle))
-print(all_body_list)
-print(len(all_body_list))
+    all_body_list += body_contents_list
+    k_2_shingles_list = get_k_shingles_list(k, body_contents_list[0])
+    all_shingle_list += k_2_shingles_list
+
+
+# print(all_shingle)
+# print(len(all_shingle))
+# print(all_body_list)
+# print(len(all_body_list))
+
+def shingles_to_string(k, shingles):
+    str1 = ''
+    for i in range(k):
+        str1 += shingles[i]
+        if k != len(shingles) - 1:
+            str1 += ' '
+    return str1
+
+
+# MxN matrix
+body_shingle_dict = dict()
+for i in range(len(all_body_list)):
+    # print(body)
+    shingle_in_body_list = [1 if shingles_to_string(k, shingles) in all_body_list[i] else 0 for shingles in
+                            all_shingle_list]
+    body_shingle_dict[str(i)] = shingle_in_body_list
+
+df = pd.DataFrame(body_shingle_dict)
+# df['index'] = all_shingle_list
+df.insert(0, 'index', all_shingle_list)
+print(df)
+df.to_csv('hw3_1.csv', index=False)
+
+print(df.sum())
