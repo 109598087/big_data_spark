@@ -5,3 +5,6 @@ pyspark
 pyarrow
 datasketch
 nltk
+textpipe
+selenium
+beautifulsoup4
