@@ -15,7 +15,6 @@ def get_document_split_list(body_document):
 def get_k_shingles_list(k, body_document):
     shingles_list = list()
     d_split = get_document_split_list(body_document)
-    # print(d_split)
     for i in range(len(d_split) - (k - 1)):
         shingles_list.append(np.array([d_split[i + j] for j in range(k)]))
     return np.array(shingles_list)
@@ -37,24 +36,19 @@ all_body_document_np = np.array(all_body_document_list)
 # print(len(all_body_document_np))
 
 one_body_one_shingles_list = [get_k_shingles_list(2, body_document) for body_document in all_body_document_np]
-# print(one_body_one_shingles_list)
-# print(len(one_body_one_shingles_list))
 
-shingles_np = get_k_shingles_list(2, all_body_document_list[0])
-for i in range(1, len(all_body_document_list)):
-    ################
-    if i % 100 == 0:
-        print(i)
-    ################
-    shingles_np = np.append(shingles_np, get_k_shingles_list(2, all_body_document_list[i]), axis=0)
-all_shingles_np = np.unique(shingles_np, axis=0)
-# print(shingles_np)
-print(len(shingles_np))
+all_shingles_list = list()
+for i in range(len(all_body_document_list)):
+    all_shingles_list += list(get_k_shingles_list(2, all_body_document_list[i]))
+all_shingles_np = np.array(all_shingles_list)
+all_shingles_unique_np = np.unique(all_shingles_np, axis=0)
+print(all_shingles_unique_np)
+print(len(all_shingles_np))
+print(len(all_shingles_unique_np))
 
 # MxN matrix
-body_shingle_dict = dict()
-for i in range(len(one_body_one_shingles_list)):
-    body_shingle_dict[i] = [1 if shingles in one_body_one_shingles_list[i] else 0 for shingles in all_shingles_np]
+body_shingle_dict = {i: [1 if shingles in one_body_one_shingles_list[i] else 0 for shingles in all_shingles_np] for i in
+                     range(len(one_body_one_shingles_list))}
 df = pd.DataFrame(body_shingle_dict)
 df.insert(0, 'index', all_shingles_np)
 
