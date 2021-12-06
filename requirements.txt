@@ -8,3 +8,5 @@ nltk
 textpipe
 selenium
 beautifulsoup4
+numba
+numpy-indexed
