@@ -27,7 +27,7 @@ def read_news_data():
         StructField("LinkedIn", IntegerType(), False),
     ])
     news_data_df = spark.read.format("csv").option("header", True).schema(schema).load(
-        "file:///opt/spark/HW2/News_Final.csv")
+        "file:///opt/spark/hw2/News_Final.csv")
     news_data_df = news_data_df.na.drop()  # delete null value
     return news_data_df
 
@@ -169,25 +169,26 @@ def count_words_in_total(column_name):
     print_result(wordsCounts, "count_" + column_name.lower() + "_words_in_total")
 
 
-from pyspark.sql import SparkSession
+# from pyspark.sql import SparkSession
 
-spark = SparkSession.builder.master("local").appName("HW2").getOrCreate()
-news_data_df = read_news_data()
+# spark = SparkSession.builder.master("local").appName("HW2").getOrCreate()
+# news_data_df = read_news_data()
+# count_words_in_total("Headline")
 
-# conf = SparkConf().setAppName('hw2').setMaster("spark://10.0.2.15:7077")
-# sc = SparkContext()
-# sqlContext = SQLContext(sc)
+conf = SparkConf().setAppName('hw2').setMaster("spark://10.0.2.15:7077")
+sc = SparkContext()
+sqlContext = SQLContext(sc)
 
-# df = pd.read_csv('hw2/News_Final.csv')
+df = pd.read_csv('hw2/News_Final.csv')
 
 # change dtype
 
-# # PublishDate to PublishDate_date column
-# all_date_list = df['PublishDate'].values
-# df['PublishDate_date'] = [date_time.split(' ')[0] for date_time in all_date_list]
-
-print("----------------------------------------(1)------------------------------------------")
+# PublishDate to PublishDate_date column
+all_date_list = df['PublishDate'].values
+df['PublishDate_date'] = [date_time.split(' ')[0] for date_time in all_date_list]
 '''
+print("----------------------------------------(1)------------------------------------------")
+
 print_word_count_dict_groupby_column_and_title_headline('Title', groupby_column='total')
 print_word_count_dict_groupby_column_and_title_headline('Headline', groupby_column='total')
 
@@ -220,7 +221,7 @@ df1['Sentiment_score_sum'] = df1['SentimentTitle'] + df1['SentimentHeadline']
 df1['Sentiment_score_mean'] = (df1['SentimentTitle'] + df1['SentimentHeadline']) / 2
 print(df1.groupby('Topic')['Sentiment_score_sum'].sum())
 print(df1.groupby('Topic')['Sentiment_score_mean'].mean())
-
+'''
 print("----------------------------------------(4)------------------------------------------")
 print_co_occurrence_matrices('Title')
 print_co_occurrence_matrices('Headline')
@@ -229,4 +230,4 @@ end_time = time.time()
 total_time = str(end_time - start_time)
 
 print(total_time)
-'''
+
