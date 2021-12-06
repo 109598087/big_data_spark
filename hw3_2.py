@@ -39,14 +39,14 @@ def split_vector(signature, b):
     return subvecs
 
 
-df = pd.read_csv('hw3/output/hw3_1_0.csv')
-for i in range(1):  # todo:191
-    df = df.merge(pd.read_csv('hw3/output/hw3_1_' + str(i) + '.csv'))
+df = pd.read_csv('hw3/hw3_1.csv')
 print(df)
+# for i in range(19042):
+#     df[str(i)] = df[str(i)].astype('int32')
 
 # all_shuffle_list
 all_shuffle_list = list()
-for i in range(3):  # todo: 3 shuffle_list
+for i in range(10):  # todo: 3 shuffle_list
     length = len(df['0'])
     a_list = [i + 1 for i in range(length)]
     shuffle(a_list)
@@ -56,16 +56,12 @@ all_shuffle_list_np = np.array(all_shuffle_list)
 
 signature_matrix_df = get_signature_matrix_df(df, all_shuffle_list_np)
 print(signature_matrix_df)
-print(len(signature_matrix_df.columns))
-
+# signature_matrix_df.to_csv('signature_matrix.csv', index=False)
+####################################################################################
 band_list = list()
 for i in range(len(signature_matrix_df.columns)):
-    band_list.append(split_vector(list(signature_matrix_df[i].to_numpy()), 50))
-# band_a = split_vector(list(signature_matrix_df[0].to_numpy()), 50)
-#
-# band_b = split_vector(list(signature_matrix_df[1].to_numpy()), 50)
-#
-# band_c = split_vector(list(signature_matrix_df[2].to_numpy()), 50)
+    band_list.append(split_vector(list(signature_matrix_df[i].to_numpy()), 9521))
+
 from itertools import combinations
 
 comb_list = list(combinations([i for i in range(len(band_list))], 2))
@@ -78,5 +74,3 @@ for comb in comb_list:
             print(f"Candidate pair: {a_rows} == {b_rows}")
             # we only need one band to match
             break
-
-# signature_matrix_df.to_csv('sigature_matrix.csv')

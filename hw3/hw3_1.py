@@ -38,20 +38,27 @@ all_body_document_np = np.array(all_body_document_list)
 one_body_one_shingles_list = [get_k_shingles_list(2, body_document) for body_document in all_body_document_np]
 
 all_shingles_list = list()
-for i in range(len(all_body_document_list)):
-    all_shingles_list += list(get_k_shingles_list(2, all_body_document_list[i]))
+for one_body_one_shingles in one_body_one_shingles_list:
+    all_shingles_list += list(one_body_one_shingles)
+print(all_shingles_list)
+
 all_shingles_np = np.array(all_shingles_list)
 all_shingles_unique_np = np.unique(all_shingles_np, axis=0)
 print(all_shingles_unique_np)
-print(len(all_shingles_np))
 print(len(all_shingles_unique_np))
 
 # MxN matrix
-body_shingle_dict = {i: [1 if shingles in one_body_one_shingles_list[i] else 0 for shingles in all_shingles_np] for i in
-                     range(len(one_body_one_shingles_list))}
-df = pd.DataFrame(body_shingle_dict)
-df.insert(0, 'index', all_shingles_np)
+k = 1000
+for dj94 in range(len(one_body_one_shingles_list) // k):
+    body_shingle_dict = {
+        i: [1 if shingles in one_body_one_shingles_list[i] else 0 for shingles in all_shingles_unique_np]
+        for i in range(dj94 * k, dj94 * k + k)
+    }
 
-print(df)
-print(df.sum())
-df.to_csv('hw3_1_np.csv', index=False)
+    df = pd.DataFrame(body_shingle_dict)
+    df.insert(0, 'index', list(all_shingles_unique_np))
+
+    # print(df)
+    print(df.sum())
+    print(dj94)
+    df.to_csv('output/hw3_1_' + str(dj94) + '.csv', index=False)
