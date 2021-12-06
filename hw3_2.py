@@ -56,33 +56,27 @@ all_shuffle_list_np = np.array(all_shuffle_list)
 
 signature_matrix_df = get_signature_matrix_df(df, all_shuffle_list_np)
 print(signature_matrix_df)
+print(len(signature_matrix_df.columns))
 
-band_a = split_vector(list(signature_matrix_df[0].to_numpy()), 50)
+band_list = list()
+for i in range(len(signature_matrix_df.columns)):
+    band_list.append(split_vector(list(signature_matrix_df[i].to_numpy()), 50))
+# band_a = split_vector(list(signature_matrix_df[0].to_numpy()), 50)
+#
+# band_b = split_vector(list(signature_matrix_df[1].to_numpy()), 50)
+#
+# band_c = split_vector(list(signature_matrix_df[2].to_numpy()), 50)
+from itertools import combinations
 
-band_b = split_vector(list(signature_matrix_df[1].to_numpy()), 50)
+comb_list = list(combinations([i for i in range(len(band_list))], 2))
+# print(comb_list)
+# print(comb_list[0])
 
-band_c = split_vector(list(signature_matrix_df[2].to_numpy()), 50)
+for comb in comb_list:
+    for a_rows, b_rows in zip(band_list[comb[0]], band_list[comb[1]]):
+        if a_rows == b_rows:
+            print(f"Candidate pair: {a_rows} == {b_rows}")
+            # we only need one band to match
+            break
 
-print(band_a)
-print(band_b)
-print(band_c)
-
-for a_rows, b_rows in zip(band_a, band_b):
-    if a_rows == b_rows:
-        print(f"Candidate pair: {a_rows} == {b_rows}")
-        # we only need one band to match
-        break
-
-for a_rows, b_rows in zip(band_a, band_c):
-    if a_rows == b_rows:
-        print(f"Candidate pair: {a_rows} == {b_rows}")
-        # we only need one band to match
-        break
-
-for a_rows, b_rows in zip(band_b, band_c):
-    if a_rows == b_rows:
-        print(f"Candidate pair: {a_rows} == {b_rows}")
-        # we only need one band to match
-        break
-
-signature_matrix_df.to_csv('sigature_matrix.csv')
+# signature_matrix_df.to_csv('sigature_matrix.csv')
