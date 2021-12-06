@@ -39,7 +39,7 @@ def split_vector(signature, b):
     return subvecs
 
 
-df = pd.read_csv('hw3/hw3_1.csv')
+df = pd.read_csv('hw3_1.csv')
 print(df)
 # for i in range(19042):
 #     df[str(i)] = df[str(i)].astype('int32')
