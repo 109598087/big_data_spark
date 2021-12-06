@@ -29,6 +29,16 @@ def get_signature_matrix_df(df, all_shuffle_list):
     return pd.DataFrame(signature_matrix_dict)
 
 
+def split_vector(signature, b):
+    assert len(signature) % b == 0
+    r = int(len(signature) / b)
+    # code splitting signature in b parts
+    subvecs = []
+    for i in range(0, len(signature), r):
+        subvecs.append(signature[i: i + r])
+    return subvecs
+
+
 df = pd.read_csv('hw3/output/hw3_1_0.csv')
 for i in range(1):  # todo:191
     df = df.merge(pd.read_csv('hw3/output/hw3_1_' + str(i) + '.csv'))
@@ -47,6 +57,32 @@ all_shuffle_list_np = np.array(all_shuffle_list)
 signature_matrix_df = get_signature_matrix_df(df, all_shuffle_list_np)
 print(signature_matrix_df)
 
-print(signature_matrix_df['0'].to_numpy())
+band_a = split_vector(list(signature_matrix_df[0].to_numpy()), 50)
 
-# signature_matrix_df.to_csv('sigature_matrix.csv')
+band_b = split_vector(list(signature_matrix_df[1].to_numpy()), 50)
+
+band_c = split_vector(list(signature_matrix_df[2].to_numpy()), 50)
+
+print(band_a)
+print(band_b)
+print(band_c)
+
+for a_rows, b_rows in zip(band_a, band_b):
+    if a_rows == b_rows:
+        print(f"Candidate pair: {a_rows} == {b_rows}")
+        # we only need one band to match
+        break
+
+for a_rows, b_rows in zip(band_a, band_c):
+    if a_rows == b_rows:
+        print(f"Candidate pair: {a_rows} == {b_rows}")
+        # we only need one band to match
+        break
+
+for a_rows, b_rows in zip(band_b, band_c):
+    if a_rows == b_rows:
+        print(f"Candidate pair: {a_rows} == {b_rows}")
+        # we only need one band to match
+        break
+
+signature_matrix_df.to_csv('sigature_matrix.csv')
