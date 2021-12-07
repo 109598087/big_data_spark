@@ -39,24 +39,24 @@ sgm_file_list = [file for file in files if file.endswith('.sgm')]
 # get_all_shingles
 all_shingle_list = list()
 all_body_list = list()
-k = 2
+k = int(input('Please input k: '))
 for sgm_file in sgm_file_list:
-    print(sgm_file, end=', ')
+    # print(sgm_file, end=', ')
     file_path = 'reuters21578/' + sgm_file
     document = BeautifulSoup(open(file_path, encoding="utf-8"), 'html.parser')
 
     # get_2_shingles 1 file
     body_list = document.find_all('body')
-    print(len(body_list))
+    # print(len(body_list))
     body_contents_list = [remove_ch(body.contents[0]) for body in body_list]
     all_body_list += body_contents_list
     k_2_shingles_list = get_k_shingles_list(k, body_contents_list[0])
     all_shingle_list += k_2_shingles_list
 
 all_shingle_list_np = np.array(all_shingle_list)
-print(len(all_shingle_list_np))
+# print(len(all_shingle_list_np))
 all_shingle_list_np_unique = np.unique(all_shingle_list_np, axis=0)
-print(len(all_shingle_list_np_unique))
+# print(len(all_shingle_list_np_unique))
 
 
 def shingles_to_string(k, shingles):

@@ -43,6 +43,7 @@ df = pd.read_csv('hw3_1.csv')
 
 # all_shuffle_list
 all_shuffle_list = list()
+number = int(input('Please input hash function number: '))
 for i in range(10):  # todo: 3 shuffle_list
     length = len(df['0'])
     a_list = [i + 1 for i in range(length)]
