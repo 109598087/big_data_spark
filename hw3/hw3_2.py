@@ -50,7 +50,7 @@ print('number= ', number)
 
 # all_shuffle_list
 all_shuffle_list = list()
-for i in range(number):  # todo: 3 shuffle_list
+for i in range(number):
     length = len(df['0'])
     a_list = [i + 1 for i in range(length)]
     shuffle(a_list)
