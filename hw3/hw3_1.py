@@ -11,17 +11,17 @@ def get_k_shingles_list(k, document):
     shingles_2_word_list = list()
     d_split = document.split(' ')
     for i in range(len(d_split) - (k - 1)):
-        shingles_2_word_list.append([d_split[i + j] for j in range(k) if d_split[i + j] != ''])
+        shingles_2_word_list.append([d_split[i + j] for j in range(k)])
     result_list = list()
     for shingles_2 in shingles_2_word_list:
         if len(shingles_2) > 1:
-            result_list.append(np.array(shingles_2))
+            result_list.append(shingles_2)
     return result_list
 
 
 def remove_ch(word):
     remove_ch_list = [',', '?', '\'', '$', ';', '.', '&', ':', '!', '#', '”', '“', '£', '/', '(', ')', '"""', '\xa0',
-                      '\x9d', '\n', '\x03', '\"', '+', '-']
+                      '\x9d', '\n', '\x03', '\"', '+', '-', ]
     for ch in remove_ch_list:
         word = word.lower().replace(ch, '')
     return word
@@ -39,10 +39,9 @@ sgm_file_list = [file for file in files if file.endswith('.sgm')]
 # get_all_shingles
 all_shingle_list = list()
 all_body_list = list()
-scanner = sc._gateway.jvm.java.util.Scanner  
-sys_in = getattr(sc._gateway.jvm.java.lang.System, 'in')
+
 print("Please input k: ", end='')
-k = int(scanner(sys_in).nextLine())
+k = int(input())
 print('k = ', k)
 
 for sgm_file in sgm_file_list:
@@ -58,10 +57,14 @@ for sgm_file in sgm_file_list:
     k_2_shingles_list = get_k_shingles_list(k, body_contents_list[0])
     all_shingle_list += k_2_shingles_list
 
-all_shingle_list_np = np.array(all_shingle_list)
-#print(len(all_shingle_list_np))
-all_shingle_list_np_unique = np.unique(all_shingle_list_np, axis=0)
-#print(len(all_shingle_list_np_unique))
+print(all_shingle_list)
+
+# all_shingle_list_np = np.array(all_shingle_list)
+# print(len(all_shingle_list_np))
+all_shingle_list_unique = [all_shingle_list[0]]
+for shingle in all_shingle_list:
+    if shingle not in all_shingle_list_unique:
+        all_shingle_list_unique.append(shingle)
 
 
 def shingles_to_string(k, shingles):
@@ -75,9 +78,8 @@ def shingles_to_string(k, shingles):
 
 # MxN matrix
 body_shingle_dict = {str(i): [1 if shingles_to_string(k, shingles) in all_body_list[i] else 0 for shingles in
-                             all_shingle_list_np_unique] for i in range(len(all_body_list) - 1)}
-
+                              all_shingle_list_unique] for i in range(len(all_body_list) - 1)}
 
 df = pd2.DataFrame(body_shingle_dict)
-df.insert(0, 'index', list(all_shingle_list_np_unique))
-df.to_csv('hw3_1.csv', index=False)
+df.insert(0, 'index', list(all_shingle_list_unique))
+df.to_csv('hw3_1_' + str(k) + '.csv', index=False)
