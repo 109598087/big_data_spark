@@ -26,10 +26,10 @@ def remove_ch(word):
         word = word.lower().replace(ch, '')
     return word
 
+
 conf = SparkConf().setAppName('hw3').setMaster("spark://10.0.2.15:7077")
 sc = SparkContext()
 sqlContext = SQLContext(sc)
-
 
 files = listdir('reuters21578/')
 # print(files)
@@ -70,8 +70,7 @@ def shingles_to_string(k, shingles):
 
 # MxN matrix
 body_shingle_dict = {str(i): [1 if shingles_to_string(k, shingles) in all_body_list[i] else 0 for shingles in
-                             all_shingle_list_np_unique] for i in range(len(all_body_list) - 1)}
-
+                              all_shingle_list_np_unique] for i in range(len(all_body_list) - 1)}
 
 df = pd2.DataFrame(body_shingle_dict)
 df.insert(0, 'index', list(all_shingle_list_np_unique))
