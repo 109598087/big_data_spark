@@ -60,43 +60,53 @@ ratings_df.columns = ['UserID', 'MovieID', 'Rating', 'Timestamp']
 # rating_score_of_each_user_df.to_csv('output/rating_score_of_each_user.csv')
 ######################################################
 # add_movie_genre_to_rating_df
-movie_id_np = ratings_df['MovieID'].to_numpy()
-# ratings_df['Genres'] = [movies_df[movies_df['MovieID'] == movie_id]['Genres'].to_numpy()[0] for movie_id in movie_id_np]
+# movie_id_np = ratings_df['MovieID'].to_numpy()
+# # ratings_df['Genres'] = [movies_df[movies_df['MovieID'] == movie_id]['Genres'].to_numpy()[0] for movie_id in movie_id_np]
+#
+# ########################remove################
+# # ratings_df.to_csv('ratings.csv', index=False)
+# ratings_df = pd.read_csv('ratings.csv')
+# ########################remove################
+#
+# rating_score_of_each_user_by_genre_df = pd.DataFrame()
+# all_user_np = users_df['UserID'].to_numpy()
+# # print(len(all_user_np))
+# for user_id in all_user_np:
+#     genres_np = ratings_df[ratings_df['UserID'] == user_id]['Genres'].to_numpy()
+#     all_genres_list = list()
+#     for genres in genres_np:
+#         all_genres_list += genres.split('|')
+#     all_genres_list = list(set(all_genres_list))
+#     # print(all_genres_list)
+#
+#     one_user_rating_df = ratings_df[ratings_df['UserID'] == user_id]
+#     one_user_rating_df_Genres_np = one_user_rating_df['Genres'].to_numpy()
+#     one_user_rating_df_Rating_np = one_user_rating_df['Rating'].to_numpy()
+#
+#     average_rating_list = list()
+#     for genre in all_genres_list:
+#         all_rating_of_one_Genre = list()
+#         for i in range(len(one_user_rating_df_Genres_np)):
+#             if genre in one_user_rating_df_Genres_np[i]:
+#                 all_rating_of_one_Genre.append(one_user_rating_df_Rating_np[i])
+#         average_rating_list.append(np.mean(all_rating_of_one_Genre))
+#
+#     one_user_df = pd.DataFrame({
+#         'UserID': [user_id for i in range(len(all_genres_list))],
+#         'Genres': all_genres_list,
+#         'Rating': average_rating_list,
+#     })
+#     rating_score_of_each_user_by_genre_df = rating_score_of_each_user_by_genre_df.append(
+#         one_user_df.sort_values('Rating', ascending=False))
+#
+# rating_score_of_each_user_by_genre_df.to_csv('output/rating_score_of_each_user_by_genre.csv', index=False)
 
-########################remove################
-# ratings_df.to_csv('ratings.csv', index=False)
-ratings_df = pd.read_csv('ratings.csv')
-########################remove################
 
-rating_score_of_each_user_by_genre_df = pd.DataFrame()
+##########################################################################
+# 4
 all_user_np = users_df['UserID'].to_numpy()
-# print(len(all_user_np))
-for user_id in all_user_np:
-    genres_np = ratings_df[ratings_df['UserID'] == user_id]['Genres'].to_numpy()
-    all_genres_list = list()
-    for genres in genres_np:
-        all_genres_list += genres.split('|')
-    all_genres_list = list(set(all_genres_list))
-    # print(all_genres_list)
-
-    one_user_rating_df = ratings_df[ratings_df['UserID'] == user_id]
-    one_user_rating_df_Genres_np = one_user_rating_df['Genres'].to_numpy()
-    one_user_rating_df_Rating_np = one_user_rating_df['Rating'].to_numpy()
-
-    average_rating_list = list()
-    for genre in all_genres_list:
-        all_rating_of_one_Genre = list()
-        for i in range(len(one_user_rating_df_Genres_np)):
-            if genre in one_user_rating_df_Genres_np[i]:
-                all_rating_of_one_Genre.append(one_user_rating_df_Rating_np[i])
-        average_rating_list.append(np.mean(all_rating_of_one_Genre))
-
-    one_user_df = pd.DataFrame({
-        'UserID': [user_id for i in range(len(all_genres_list))],
-        'Genres': all_genres_list,
-        'Rating': average_rating_list,
-    })
-    rating_score_of_each_user_by_genre_df = rating_score_of_each_user_by_genre_df.append(
-        one_user_df.sort_values('Rating', ascending=False))
-
-rating_score_of_each_user_by_genre_df.to_csv('output/rating_score_of_each_user_by_genre.csv', index=False)
+print(all_user_np)
+# user_id = int(input('Please input UserID: '))
+user_id = 50
+print(ratings_df[ratings_df['UserID'] == user_id])
+print(ratings_df[ratings_df['UserID'] == user_id])
