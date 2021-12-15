@@ -13,6 +13,7 @@ ratings_df = pd.read_csv('../hw4/ml-1m/ratings.dat', sep='::', header=None)
 # print(ratings_df)
 ratings_df.columns = ['UserID', 'MovieID', 'Rating', 'Timestamp']
 
+
 # # 1
 # sorted_all_movie_ratings_df = ratings_df.groupby('MovieID').mean().sort_values('Rating', ascending=False)['Rating']
 # print(sorted_all_movie_ratings_df)
@@ -104,9 +105,46 @@ ratings_df.columns = ['UserID', 'MovieID', 'Rating', 'Timestamp']
 
 ##########################################################################
 # 4
-all_user_np = users_df['UserID'].to_numpy()
-print(all_user_np)
+def get_cosine_similarity(a_np, b_np):
+    return np.sum(a_np * b_np) / (pow(np.sum(np.square(a_np)), 1 / 2) * pow(np.sum(np.square(b_np)), 1 / 2))
+
+
 # user_id = int(input('Please input UserID: '))
 user_id = 50
-print(ratings_df[ratings_df['UserID'] == user_id])
-print(ratings_df[ratings_df['UserID'] == user_id])
+
+cosine_similarity_list = list()
+all_user_np = users_df['UserID'].to_numpy()
+print(all_user_np)
+
+for user_id2 in all_user_np:
+    two_user_df = pd.DataFrame()
+    two_user_df['MovieID'] = movies_df['MovieID']
+    two_user_df = two_user_df.set_index('MovieID')
+
+    user1_df = ratings_df[ratings_df['UserID'] == user_id].set_index('MovieID')
+    user2_df = ratings_df[ratings_df['UserID'] == user_id2].set_index('MovieID')
+
+    two_user_df = two_user_df.merge(user1_df, how='outer', left_index=True, right_index=True)
+    two_user_df = two_user_df.merge(user2_df, how='outer', left_index=True, right_index=True)
+    two_user_df = two_user_df.fillna(0)
+    # print(two_user_df)
+
+    a_np = two_user_df['Rating_x'].to_numpy()
+    b_np = two_user_df['Rating_y'].to_numpy()
+
+    cosine_similarity_list.append(get_cosine_similarity(a_np, b_np))
+
+# print(cosine_similarity_list)
+
+user_cosine_similarity_df = pd.DataFrame({
+    'UserID': all_user_np,
+    'score': cosine_similarity_list,
+}).sort_values('score', ascending=False)
+
+user_cosine_similarity_df.to_csv('output/user_cosine_similarity.csv', index=False)
+##########################################################################
+# 5
+movie_id = 50
+all_movie_np = movies_df['MovieID'].to_numpy()
+print(all_user_np)
+
