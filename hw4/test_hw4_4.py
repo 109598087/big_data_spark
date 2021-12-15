@@ -10,14 +10,12 @@ df = pd.DataFrame({
 a_np = df['A'].to_numpy()
 b_np = df['C'].to_numpy()
 
+print(a_np * b_np)
+
 
 def get_cosine_similarity(a_np, b_np):
-    up = 0
-    for i in range(len(a_np)):
-        up += a_np[i] * b_np[i]
-    return up / (pow(np.sum(np.square(a_np)), 1 / 2) * pow(np.sum(np.square(b_np)), 1 / 2))
+    return np.sum(a_np * b_np) / (pow(np.sum(np.square(a_np)), 1 / 2) * pow(np.sum(np.square(b_np)), 1 / 2))
 
 
-# cosine_similarity
 
 print(get_cosine_similarity(a_np, b_np))
