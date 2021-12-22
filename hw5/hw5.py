@@ -13,6 +13,7 @@ inlinks_df.to_csv('output/inlinks.csv')
 
 # 3
 v = 0
+# v = int(input())
 from_v_df = google_df[google_df['FromNodeId'] == v]
 print(from_v_df)
 from_v_df.to_csv('output/from_v.csv', index=False)
