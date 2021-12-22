@@ -7,3 +7,5 @@ datasketch
 nltk
 selenium
 beautifulsoup4
+py4j
+modin[all]

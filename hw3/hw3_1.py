@@ -7,16 +7,17 @@ from pyspark.sql import SQLContext
 import numpy as np
 from py4j.java_gateway import JavaGateway
 
+
 def get_k_shingles_list(k, document):
-    shingles_2_word_list = list()
+    shingles_list = list()
     d_split = document.split(' ')
     for i in range(len(d_split) - (k - 1)):
-        shingles_2_word_list.append([d_split[i + j] for j in range(k)])
-    result_list = list()
-    for shingles_2 in shingles_2_word_list:
-        if len(shingles_2) > 1:
-            result_list.append(shingles_2)
-    return result_list
+        shingles_list.append([d_split[i + j] for j in range(k)])
+    # result_list = list()
+    # for shingles_2 in shingles_list:
+    #     if len(shingles_2) > 1:
+    #         result_list.append(shingles_2)
+    # return result_list
 
 
 def remove_ch(word):
@@ -25,10 +26,6 @@ def remove_ch(word):
     for ch in remove_ch_list:
         word = word.lower().replace(ch, '')
     return word
-
-conf = SparkConf().setAppName('hw3').setMaster("spark://10.0.2.15:7077")
-sc = SparkContext()
-sqlContext = SQLContext(sc)
 
 
 files = listdir('reuters21578/')
